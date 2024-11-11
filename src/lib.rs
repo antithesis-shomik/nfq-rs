@@ -804,6 +804,31 @@ impl Queue {
         Ok(msg)
     }
 
+    /* 
+     * Antithesis NFQueue Patch
+     * 
+     * Hoist the relatively unopinionated internals of NFQ so we can integrate 
+     * the queue with async more cleanly by replacing recv's busy wait logic
+     */
+
+    /// Try to receive one packet from queue without busywaiting for queue push
+    pub fn recv_once(&mut self) -> Result<()> {
+        self.recv_nlmsg(|this: &mut Queue, buf: BytesMut| {
+            parse_msg(buf, this);
+        })?;
+        Ok(())
+    }
+
+    /// Attempt to pop a single msg from queue
+    pub fn pop_msg(&mut self) -> Option<Message> {
+        if self.queue.is_empty() {
+            None
+        } else {
+            let msg = self.queue.pop_front().unwrap();
+            Some(msg)
+        }
+    }
+
     /// Verdict a message.
     pub fn verdict(&mut self, msg: Message) -> Result<()> {
         let buffer = core::mem::take(&mut self.verdict_buffer);
