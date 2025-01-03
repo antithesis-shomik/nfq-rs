@@ -79,7 +79,7 @@ fn nfq_hdr_put(nlmsg: &mut NlmsgMut, typ: u16, queue_num: u16, ack: bool) {
     nfg.res_id = queue_num.to_be();
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum PayloadState {
     Unmodified,
     Modified,
@@ -87,6 +87,7 @@ enum PayloadState {
 }
 
 /// A network packet with associated metadata.
+#[derive(Clone)]
 pub struct Message {
     id: u16,
     nfmark: u32,
@@ -333,7 +334,7 @@ impl Message {
 
 /// Conntrack information associated with the message
 #[cfg_attr(not(feature = "ct"), doc(hidden))]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Conntrack {
     state: u32,
     id: u32,
